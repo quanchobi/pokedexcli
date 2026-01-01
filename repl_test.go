@@ -6,22 +6,22 @@ import (
 
 func TestCleanInput(t *testing.T) {
 	cases := []struct {
-		input string
+		input    string
 		expected []string
-	} {
+	}{
 		// test a normal string
 		{
-			input: "Hello World",
+			input:    "Hello World",
 			expected: []string{"hello", "world"},
 		},
 		// extra spaces
 		{
-			input: "   Hello   World   !  ",
+			input:    "   Hello   World   !  ",
 			expected: []string{"hello", "world", "!"},
 		},
 		// empty string
 		{
-			input: "",
+			input:    "",
 			expected: []string{},
 		},
 	}
@@ -33,7 +33,7 @@ func TestCleanInput(t *testing.T) {
 			t.Errorf("FAIL: actual: %v, expected: %v", actual, c.expected)
 		}
 
-		for i:= range actual {
+		for i := range actual {
 			word := actual[i]
 			expectedWord := c.expected[i]
 			if word != expectedWord {
