@@ -9,7 +9,7 @@ import (
 type locationAreaResponse struct {
 	Count    int    `json:"count"`
 	Next     string `json:"next"`
-	Previous any    `json:"previous"`
+	Previous string `json:"previous"`
 	Results  []struct {
 		Name string `json:"name"`
 		URL  string `json:"url"`
@@ -17,6 +17,13 @@ type locationAreaResponse struct {
 }
 
 func GetLocationPage(url string) (locationAreaResponse, error) {
+	entry, ok := cache.Get(url)
+	var locations locationAreaResponse
+	if ok { // if in cache
+		json.Unmarshal(entry, &locations)
+		return locations, nil
+	}
+	// not in cache
 	res, err := http.Get(url)
 	if err != nil {
 		return locationAreaResponse{}, err
@@ -25,13 +32,11 @@ func GetLocationPage(url string) (locationAreaResponse, error) {
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
+
+	cache.Add(url, body)
 	if err != nil {
 		return locationAreaResponse{}, err
 	}
-
-	var locations locationAreaResponse
-	// we area expecting a single page of data, so unmarshal is fine.
 	json.Unmarshal(body, &locations)
-
 	return locations, nil
 }

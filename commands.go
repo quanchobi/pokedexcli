@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/quanchobi/pokedexcli/internal/pokeapi"
 	"os"
+
+	"github.com/quanchobi/pokedexcli/internal/pokeapi"
 )
 
 type config struct {
@@ -39,10 +40,9 @@ func commandMapForward(conf *config) error {
 	if err != nil {
 		return err
 	}
-	// we area expecting a single page of data, so unmarshal is fine.
 
 	conf.next = locations.Next
-	conf.previous = locations.Next
+	conf.previous = locations.Previous
 
 	for _, location := range locations.Results {
 		fmt.Println(location.Name)
@@ -63,7 +63,7 @@ func commandMapBack(conf *config) error {
 	}
 
 	conf.next = locations.Next
-	conf.previous = locations.Next
+	conf.previous = locations.Previous
 
 	for _, location := range locations.Results {
 		fmt.Println(location.Name)
