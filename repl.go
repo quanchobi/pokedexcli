@@ -37,11 +37,15 @@ func repl() {
 		}
 
 		command, ok := commands[tokens[0]]
+		var params []string
+		if len(tokens) > 1 {
+			params = tokens[1:]
+		}
 		if !ok {
 			fmt.Println("Unknown command")
 			continue
 		}
-		if err := command.callback(&conf); err != nil {
+		if err := command.callback(&conf, params...); err != nil {
 			fmt.Print(err)
 		}
 	}
