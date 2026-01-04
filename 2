@@ -20,16 +20,6 @@ type cliCommand struct {
 	callback    func(*config, ...string) error
 }
 
-type Pokedex struct {
-	caught map[string]pokeapi.Pokemon
-	seen   map[string]pokeapi.Pokemon
-}
-
-var dex = Pokedex{
-	caught: make(map[string]pokeapi.Pokemon),
-	seen:   make(map[string]pokeapi.Pokemon),
-}
-
 func commandExit(c *config, _ ...string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
@@ -84,7 +74,7 @@ func commandMapBack(conf *config, _ ...string) error {
 	return nil
 }
 
-func commandExplore(_ *config, names ...string) error {
+func commandExplore(conf *config, names ...string) error {
 	if len(names) < 1 {
 		fmt.Println("explore requires a location name")
 		return nil
@@ -105,83 +95,35 @@ func commandExplore(_ *config, names ...string) error {
 	return nil
 }
 
-func commandCatch(_ *config, names ...string) error {
+func commandCatch(conf *config, names ...string) error {
 	if len(names) < 1 {
 		fmt.Println("catch requires a Pokemon name")
 		return nil
 	}
 	name := names[0]
 	url := "https://pokeapi.co/api/v2/pokemon/" + name
-	pokemon, err := pokeapi.GetPokemonBaseXP(url)
+	baseXP, err := pokeapi.GetPokemonBaseXP(url)
 	if err != nil {
 		return err
 	}
-	if pokemon.Name == "" {
-		fmt.Println("invalid pokemon name")
-		return nil
-	}
-
-	baseXP := pokemon.BaseExperience
 
 	n := rand.Intn(400)
 
 	numShakes := 0
-	if n > baseXP/2 {
+	if n > baseXP / 2 {
 		numShakes = 3
-	} else if n > baseXP/3 {
+	} else if n > baseXP / 3 {
 		numShakes = 2
-	} else if n > baseXP/4 {
+	} else if n > baseXP / 4 {
 		numShakes = 1
 	}
 
 	fmt.Printf("Throwing a Pokeball at %s...\n", name)
 	for i := 0; i < numShakes; i++ {
-		fmt.Print(".")
 		time.Sleep(750 * time.Millisecond)
+		fmt.Print(".")
 	}
 
-	if n > baseXP {
-		fmt.Printf("\ncaught %s\n", name)
-		dex.caught[name] = pokemon
-	} else {
-		fmt.Printf("\n%s escaped!\n", name)
-	}
-	dex.seen[name] = pokemon
-	return nil
-}
-
-func commandInspect(_ *config, names ...string) error {
-	if len(names) < 1 {
-		fmt.Println("inspect requires a pokemon name")
-		return nil
-	}
-	name := names[0]
-
-	pokemon, ok := dex.caught[name]
-	if !ok {
-		fmt.Println("you have not caught that pokemon")
-		return nil
-	}
-
-	fmt.Printf("Name: %s\n", pokemon.Name)
-	fmt.Printf("Height: %d\n", pokemon.Height)
-	fmt.Printf("Weight: %d\n", pokemon.Weight)
-	fmt.Println("Stats:")
-	for _, stat := range pokemon.Stats {
-		fmt.Printf("  -%s: %d\n", stat.Stat.Name, stat.BaseStat)
-	}
-	fmt.Println("Types:")
-	for _, pokeType := range pokemon.Types {
-		fmt.Printf("  -%s\n", pokeType.Type.Name)
-	}
-	return nil
-}
-
-func commandPokedex(_ *config, _ ...string) error {
-	fmt.Println("Your Pokedex:")
-	for pokemon, _ := range dex.caught {
-		fmt.Printf("- %s\n", pokemon)
-	}
 	return nil
 }
 
@@ -214,18 +156,8 @@ func getCommands() map[string]cliCommand {
 		},
 		"catch": {
 			name:        "catch",
-			description: "Attempt to catch a given Pokemon",
+			description: "Attempt to catch a given pokemon",
 			callback:    commandCatch,
-		},
-		"inspect": {
-			name:        "inspect",
-			description: "Displays information of a specified caught Pokemon",
-			callback:    commandInspect,
-		},
-		"pokedex": {
-			name:        "pokedex",
-			description: "Displays all pokemon caught",
-			callback:    commandPokedex,
 		},
 	}
 }
